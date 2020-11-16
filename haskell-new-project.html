@@ -61,33 +61,38 @@ code span.va { color: #000000; } /* Variable */
 code span.vs { color: #4e9a06; } /* VerbatimString */
 code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
 </style></head><body><div class="ui fluid container" id="neuron-theme-default-teal"><nav class="top-menu"><div class="ui inverted compact neuron icon menu teal"><a class="left item" href="." title="Home"><i class="home icon"></i></a><a class="left item" href="search.html" title="Search Zettels"><i class="search icon"></i></a><a class="center item" href="https://github.com/srid/srid.ca/edit/master/haskell-new-project.md" title="Edit this Zettel"><i class="edit icon"></i></a><a class="right item" href="z-index.html" title="All Zettels (z-index)"><i class="tree icon"></i></a></div></nav><nav class="flipped tree deemphasized" id="zettel-uptree" style="transform-origin: 50%"><ul class="root"><li><ul><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="2017102.html">Nix</a></span></span></div><ul><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="2012602.html">Package Management</a></span></span></div><ul><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="cd6eda70.html">Developer Tooling</a></span></span></div><ul><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="2009703.html">Haskell</a></span></span></div></li></ul></li></ul></li><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="c7170724.html">NixOS</a></span></span></div><ul><li><div class="forest-link"><span class="zettel-link-container"><span class="zettel-link"><a href="2012302.html">Software</a></span></span></div></li></ul></li></ul></li></ul></li></ul></nav><div class="ui text container" id="zettel-container" style="position: relative"><div id="zettel-container-anchor" style="position: absolute; top: -24px; left: 0"></div><div class="zettel-view"><article class="ui raised attached segment zettel-content"><div class="pandoc"><h1 id="creating-a-new-haskell-project-using-nix">Creating a new Haskell project using Nix</h1><p>With <span class="zettel-link-container cf"><span class="zettel-link"><a href="58bc09d0.html">IDE</a></span></span> support too.</p><p>First, install <a href="https://github.com/obsidiansystems/nix-thunk">nix-thunk</a> (alternatively, you may use niv or flakes).</p><div class="pandoc-code highlighted"><pre><code class="bash"><span class="co"># Initialize project layout using cabal</span>
-<span class="va">PKGNAME=</span><span class="">foo</span>
-<span class="fu">mkdir</span><span class=""> </span><span class="va">$PKGNAME</span><span class=""> </span><span class="kw">&amp;&amp;</span><span class=""> </span><span class="bu">cd</span><span class=""> </span><span class="va">$PKGNAME</span>
-<span class="ex">nix-shell</span><span class=""> -p cabal-install -p ghc --run </span><span class="st">&quot;cabal init -m -l BSD3 -p </span><span class="va">$PKGNAME</span><span class="st">&quot;</span>
+<span class="fu">mkdir</span><span class=""> mypkg </span><span class="kw">&amp;&amp;</span><span class=""> </span><span class="bu">cd</span><span class=""> mypkg</span>
+<span class="co"># Note: Pass --lib, --exe or --libandexe as appropriate</span>
+<span class="ex">nix-shell</span><span class=""> -p cabal-install -p ghc --run </span><span class="st">&quot;cabal init -m -l BSD3 -p mypkg&quot;</span>
 
 <span class="co"># Add to git</span>
 <span class="fu">git</span><span class=""> init </span><span class="kw">&amp;&amp;</span><span class=""> </span><span class="fu">git</span><span class=""> add . </span><span class="kw">&amp;&amp;</span><span class=""> </span><span class="fu">git</span><span class=""> commit -m </span><span class="st">&quot;Initial commit&quot;</span>
 
 <span class="co"># Remove, or update, version constraint on base to match compiler</span>
-<span class="ex">vim</span><span class=""> </span><span class="va">${PKGNAME}</span><span class="">.cabal  # and remove version constraint on </span><span class="kw">`</span><span class="ex">base</span><span class="kw">`</span>
+<span class="ex">vim</span><span class=""> *.cabal  # and remove version constraint on </span><span class="kw">`</span><span class="ex">base</span><span class="kw">`</span>
 
-<span class="co"># Pin nixpkgs</span>
+<span class="co"># Pin nixpkgs, etc</span>
 <span class="co"># You might want to pass --rev, using the value from status.nixos.org</span>
 <span class="ex">nix-thunk</span><span class=""> create https://github.com/nixos/nixpkgs.git dep/nixpkgs</span>
+<span class="ex">nix-thunk</span><span class=""> create https://github.com/hercules-ci/gitignore.nix.git dep/gitignoresrc</span>
 
 <span class="co"># Write template default.nix</span>
 <span class="fu">cat</span><span class=""> </span><span class="op">&lt;&lt; EOF</span><span class=""> </span><span class="op">&gt;</span><span class=""> </span><span class="ex">default.nix</span>
 <span class="">{ pkgs ? import ./dep/nixpkgs {} }:</span>
-
-<span class="">pkgs.haskellPackages.developPackage {</span>
-<span class="">  root = ./.;</span>
-<span class="">  modifier = drv:</span>
-<span class="">    pkgs.haskell.lib.addBuildTools drv (with pkgs.haskellPackages;</span>
-<span class="">      [ cabal-install</span>
-<span class="">        ghcid</span>
-<span class="">        haskell-language-server</span>
-<span class="">      ]);</span>
-<span class="">}</span>
+<span class="">let </span>
+<span class="">  inherit (import ./dep/gitignore { inherit (pkgs) lib; }) gitignoreSource;</span>
+<span class="">in </span>
+<span class="">  pkgs.haskellPackages.developPackage {</span>
+<span class="">    name = &quot;mypkg&quot;;</span>
+<span class="">    root = gitignoreSource ./.;</span>
+<span class="">    modifier = drv:</span>
+<span class="">      pkgs.haskell.lib.addBuildTools drv (with pkgs.haskellPackages;</span>
+<span class="">        [ cabal-install</span>
+<span class="">          cabal-fmt</span>
+<span class="">          ghcid</span>
+<span class="">          haskell-language-server</span>
+<span class="">        ]);</span>
+<span class="">  }</span>
 <span class="">EOF</span>
 
 <span class=""># Test your changes</span>
@@ -97,4 +102,4 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <span class=""># Create .gitignore and commit</span>
 <span class="">echo -e &quot;dist-newstyle\nresult&quot; &gt; .gitignore</span>
 <span class="">git add . &amp;&amp; git commit -m &quot;Nixify&quot;</span>
-</code></pre></div><p>To enable IDE support,</p><ul><li>Copy <a href="https://github.com/srid/reflex-stone/tree/master/.vscode">.vscode template</a> to <code>./.vscode</code> (note: settings.json should point to default.nix instead of shell.nix) and open this project in VSCode.</li><li>Add the <a href="https://github.com/haskell/haskell-language-server#configuring-your-project-build">appropriate hie.yaml</a></li></ul><h2 id="todo">TODO</h2><ul><li>[ ] Use <code>gitignoreSrc</code></li></ul></div><div class="metadata"><div class="date" title="Zettel date"><time datetime="2020-11-04T14:31">2020-11-04</time></div></div></article><nav class="ui bottom attached segment deemphasized backlinks-container"><h3 class="ui header">Backlinks</h3><ul class="backlinks"><li><span class="zettel-link-container cf"><span class="zettel-link"><a href="2012504.html">Beginner Haskell</a></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc"><span class="zettel-link-container cf"><span class="zettel-link" data-inverted="" data-position="right center" data-tooltip="Tags: nix"><a href="haskell-new-project.html">Creating a new Haskell project using Nix</a></span></span></div></li></ul></li><li><span class="zettel-link-container folgezettel"><span class="zettel-link"><a href="2017102.html">Nix</a><span data-nosnippet=""><sup title="Branching link (folgezettel)">ᛦ</sup></span></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc">Linking by tag: <code>nix</code></div></li></ul></li><li><span class="zettel-link-container cf"><span class="zettel-link"><a href="356bec10.html">Recently created notes</a></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc">All zettels query</div></li></ul></li></ul><a class="ui right ribbon label zettel-tag " href="search.html?tag=nix" title="See all zettels tagged &#39;nix&#39;">nix</a><p></p></nav></div></div><script>if (window.scrollY == 0) { document.getElementById("zettel-container-anchor").scrollIntoView({behavior: "smooth", block: "start"}); }</script><div class="ui one column grid footer-version"><div class="center aligned column"><div class="ui tiny image"><a href="https://neuron.zettel.page"><img alt="logo" src="https://raw.githubusercontent.com/srid/neuron/master/assets/neuron.svg" title="Generated by Neuron" /></a></div></div></div></div></body></html>
+</code></pre></div><p>To enable IDE support,</p><ul><li>Copy <a href="https://github.com/srid/reflex-stone/tree/master/.vscode">.vscode template</a> to <code>./.vscode</code> (note: settings.json should point to default.nix instead of shell.nix) and open this project in VSCode.</li><li>Add the <a href="https://github.com/haskell/haskell-language-server#configuring-your-project-build">appropriate hie.yaml</a></li></ul></div><div class="metadata"><div class="date" title="Zettel date"><time datetime="2020-11-04T14:31">2020-11-04</time></div></div></article><nav class="ui bottom attached segment deemphasized backlinks-container"><h3 class="ui header">Backlinks</h3><ul class="backlinks"><li><span class="zettel-link-container cf"><span class="zettel-link"><a href="2012504.html">Beginner Haskell</a></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc"><span class="zettel-link-container cf"><span class="zettel-link" data-inverted="" data-position="right center" data-tooltip="Tags: nix"><a href="haskell-new-project.html">Creating a new Haskell project using Nix</a></span></span></div></li></ul></li><li><span class="zettel-link-container folgezettel"><span class="zettel-link"><a href="2017102.html">Nix</a><span data-nosnippet=""><sup title="Branching link (folgezettel)">ᛦ</sup></span></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc">Linking by tag: <code>nix</code></div></li></ul></li><li><span class="zettel-link-container cf"><span class="zettel-link"><a href="356bec10.html">Recently created notes</a></span></span><ul class="context-list" style="zoom: 85%;"><li class="item"><div class="pandoc">All zettels query</div></li></ul></li></ul><a class="ui right ribbon label zettel-tag " href="search.html?tag=nix" title="See all zettels tagged &#39;nix&#39;">nix</a><p></p></nav></div></div><script>if (window.scrollY == 0) { document.getElementById("zettel-container-anchor").scrollIntoView({behavior: "smooth", block: "start"}); }</script><div class="ui one column grid footer-version"><div class="center aligned column"><div class="ui tiny image"><a href="https://neuron.zettel.page"><img alt="logo" src="https://raw.githubusercontent.com/srid/neuron/master/assets/neuron.svg" title="Generated by Neuron" /></a></div></div></div></div></body></html>
