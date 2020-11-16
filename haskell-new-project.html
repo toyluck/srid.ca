@@ -77,18 +77,17 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
 <span class="co"># Write template default.nix</span>
 <span class="fu">cat</span><span class=""> </span><span class="op">&lt;&lt; EOF</span><span class=""> </span><span class="op">&gt;</span><span class=""> </span><span class="ex">default.nix</span>
-<span class="">let </span>
-<span class="">  pkgs = import ./dep/nixpkgs { };</span>
-<span class="">in </span>
-<span class="">  pkgs.haskellPackages.developPackage {</span>
-<span class="">    root = ./.;</span>
-<span class="">    modifier = drv:</span>
-<span class="">      pkgs.haskell.lib.addBuildTools drv (with pkgs.haskellPackages;</span>
-<span class="">        [ cabal-install</span>
-<span class="">          ghcid</span>
-<span class="">          haskell-language-server</span>
-<span class="">        ]);</span>
-<span class="">  }</span>
+<span class="">{ pkgs ? import ./dep/nixpkgs {} }:</span>
+
+<span class="">pkgs.haskellPackages.developPackage {</span>
+<span class="">  root = ./.;</span>
+<span class="">  modifier = drv:</span>
+<span class="">    pkgs.haskell.lib.addBuildTools drv (with pkgs.haskellPackages;</span>
+<span class="">      [ cabal-install</span>
+<span class="">        ghcid</span>
+<span class="">        haskell-language-server</span>
+<span class="">      ]);</span>
+<span class="">}</span>
 <span class="">EOF</span>
 
 <span class=""># Test your changes</span>
