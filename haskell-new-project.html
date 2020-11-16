@@ -74,8 +74,10 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 
 <span class="co"># Pin nixpkgs, etc</span>
 <span class="co"># You might want to pass --rev, using the value from status.nixos.org</span>
-<span class="ex">nix-thunk</span><span class=""> create https://github.com/nixos/nixpkgs.git dep/nixpkgs</span>
-<span class="ex">nix-thunk</span><span class=""> create https://github.com/hercules-ci/gitignore.nix.git dep/gitignoresrc</span>
+<span class="ex">nix-thunk</span><span class=""> create </span><span class="kw">\</span>
+<span class="">  </span><span class="ex">https</span><span class="">://github.com/nixos/nixpkgs.git dep/nixpkgs</span>
+<span class="ex">nix-thunk</span><span class=""> create </span><span class="kw">\</span>
+<span class="">  </span><span class="ex">https</span><span class="">://github.com/hercules-ci/gitignore.nix.git dep/gitignoresrc</span>
 
 <span class="co"># Write template default.nix</span>
 <span class="fu">cat</span><span class=""> </span><span class="op">&lt;&lt; EOF</span><span class=""> </span><span class="op">&gt;</span><span class=""> </span><span class="ex">default.nix</span>
