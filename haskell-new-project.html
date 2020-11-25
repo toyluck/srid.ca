@@ -84,7 +84,7 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 <span class="fu">cat</span><span class=""> </span><span class="op">&lt;&lt; EOF</span><span class=""> </span><span class="op">&gt;</span><span class=""> </span><span class="ex">default.nix</span>
 <span class="">{ pkgs ? import ./dep/nixpkgs {} }:</span>
 <span class="">let </span>
-<span class="">  inherit (import ./dep/gitignore { inherit (pkgs) lib; }) gitignoreSource;</span>
+<span class="">  inherit (import ./dep/gitignoresrc { inherit (pkgs) lib; }) gitignoreSource;</span>
 <span class="">in </span>
 <span class="">  pkgs.haskellPackages.developPackage {</span>
 <span class="">    name = &quot;mypkg&quot;;</span>
