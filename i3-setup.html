@@ -71,6 +71,13 @@ code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warni
 </code></pre></div><p>You will also have to instruct X to merge these resources using <code>xrdb</code> on startup. When configuring i3 using configuration.nix (not home-manager) configuration, you can do this as follows:</p><div class="pandoc-code highlighted"><pre><code class="nix"><span class="ex">windowManager.i3.extraSessionCommands</span><span class=""> = </span><span class="st">&#39;&#39;</span>
 <span class="">  </span><span class="va">${pkgs</span><span class="er">.xorg.xrdb</span><span class="va">}</span><span class="ex">/bin/xrdb</span><span class=""> -merge ~/.Xresources</span>
 <span class="st">&#39;&#39;</span>
+</code></pre></div><p>Cursor size will still be tiny, which can be fixed using home-manager configuration:</p><div class="pandoc-code highlighted"><pre><code class="nix"><span class="">  </span><span class="co"># High DPI cursor fix</span>
+<span class="">  </span><span class="co"># https://github.com/NixOS/nixpkgs/issues/34603</span>
+<span class="">  </span><span class="ex">xsession.pointerCursor</span><span class=""> = {</span>
+<span class="">    </span><span class="ex">name</span><span class=""> = </span><span class="st">&quot;Vanilla-DMZ&quot;</span><span class="kw">;</span>
+<span class="">    </span><span class="ex">package</span><span class=""> = pkgs.vanilla-dmz</span><span class="kw">;</span>
+<span class="">    </span><span class="fu">size</span><span class=""> = 128</span><span class="kw">;</span>
+<span class="">  };</span>
 </code></pre></div><h2 id="automatic-screen-lock">Automatic screen lock</h2><p>Various solutions exist, but one way to configure automatic screen locking is to use the <code>xautolock</code> program. nixpkgs provides a systemd service for it:</p><div class="pandoc-code highlighted"><pre><code class="nix"><span class="co"># Auto-lock</span>
 <span class="ex">xautolock</span><span class=""> = {</span>
 <span class="">  </span><span class="bu">enable</span><span class=""> = true</span><span class="kw">;</span>
